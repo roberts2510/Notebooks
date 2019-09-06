@@ -1,0 +1,385 @@
+	use DFLIB
+       
+        type(windowconfig) wc; type (wxycoord) wxy; 
+        logical status; integer ires; integer ires2
+       
+        real (8)   time,vmax,px,py,dt,X(12), Y(12), ncoord(6),l,rt,ax(12),ay(12),axp(12),e,r,ayp(12),sigma,lx,coords(2),F(2),fm(2),Vx(12),Vy(12),epot0,ekin0,epoln0,epoln,epot,ekin
+        integer i,j,sh,N,k,u,p,left,h,flag,flag1
+      m=10000000.0
+    sigma=4
+       N=12
+       e=0.001
+ lx=8
+        vmax=0.2
+        time=0
+    
+     dt=0.05
+    
+
+        status=GetWindowConfig(wc)
+    
+        call SetViewPort(50, 50, 1000, 1000)
+        ires=SetWindow(.true., DBLE(0), DBLE(0), DBLE(2*lx), DBLE(1.5*lx)) 
+      ires2=setcolor(4)
+                     	 call moveto_w(dble(0),dble(0),wxy)
+                           ires2 = lineto_w(dble(8),dble(0))
+    
+         call moveto_w(dble(0),dble(0),wxy)
+                           ires2 = lineto_w(dble(0),dble(lx)) 
+					             	 call moveto_w(dble(lx),dble(lx),wxy)
+                           ires2 = lineto_w(dble(lx),dble(0))
+    
+         call moveto_w(dble(lx),dble(lx),wxy)
+                           ires2 = lineto_w(dble(0),dble(lx)) 
+					
+                  call moveto_w(dble(lx/2),dble(0),wxy)
+                           ires2 = lineto_w(dble(lx/2),dble(lx)) 
+                           
+                           
+   
+                      r=lx/64
+             
+
+              !  
+                call RANDOM_SEED()
+                px=0.0
+                py=0.0
+                           do i=1,N
+                                 call RANDOM_NUMBER(r1)
+                                  call RANDOM_NUMBER(r2)
+                                Vx(i)=vmax*(2*r1-1)
+                                
+                                Vy(i)=vmax*(2*r2-1)
+                                px=px+Vx(i)*m
+                                                                py=py+Vy(i)*m
+
+                                
+    end do
+    
+
+    Vx(12)=Vx(12)-px/m
+        Vy(12)=Vy(12)-py/m
+
+
+    X(1)=lx/4
+    X(2)=lx*2/4
+    X(3)=lx*3/4
+    X(4)=lx/4
+    X(5)=lx*2/4
+    X(6)=lx*3/4
+    X(7)=lx/4
+    X(8)=lx*2/4
+    X(9)=lx*3/4
+    X(10)=lx/4
+    X(11)=lx*2/4
+    X(12)=lx*3/4
+       Y(1)=4*lx/5
+    Y(2)=4*lx/5
+    Y(3)=4*lx/5
+    Y(4)=3*lx/5
+    Y(5)=3*lx/5
+    Y(6)=3*lx/5
+    Y(7)=2*lx/5
+    Y(8)=2*lx/5
+    Y(9)=2*lx/5
+    Y(10)=lx/5
+    Y(11)=lx/5
+    Y(12)=lx/5
+    
+								
+
+ 
+
+          flag=0         
+
+
+ires2=setcolor(5)
+				     do kol=1,N
+                    ires2=ellipse_w($gfillinterior, dble(X(kol)-r),dble(Y(kol)-r),dble(X(kol)+r),dble(Y(kol)+r))
+                    
+    end do
+    read(*,*) 
+     
+    ires2=setcolor(0)
+    
+     do kol=1,N
+                    ires2=ellipse_w($gfillinterior, dble(X(kol)-r),dble(Y(kol)-r),dble(X(kol)+r),dble(Y(kol)+r))
+                    
+    end do
+                
+                           
+    
+    
+    
+    
+    
+    epoln0=0.0
+    epot0=0.0
+    ekin0=0.0
+     epoln=0.0
+    ekin=0.0
+    epot=0.0
+    
+    do i=1,20000
+           epoln=0.0
+    ekin=0.0
+    epot=0.0
+        
+   
+    time=time+dt
+        
+        
+          
+                
+        do j = 1,N
+		F(1)=0.0
+		F(2)=0.0
+		do k = 1,N
+
+			if(k==j) then
+				cycle
+			end if
+			ncoord(1) = X(j)-X(k)
+			ncoord(2) = X(j)-X(k)-lx
+			ncoord(3) = X(j)-X(k)+lx
+
+			ncoord(4) = Y(j)-Y(k)
+			ncoord(5) = Y(j)-Y(k)-lx
+			ncoord(6) = Y(j)-Y(k)+lx
+			rt = ncoord(1)**2+ncoord(4)**2
+			coords(1) = -ncoord(1) + X(j)
+			coords(2) = -ncoord(4) + Y(j)
+			do u = 1,3
+				do p = 4,6
+					if(rt	-ncoord(u)**2 - ncoord(p)**2 >0.0001) then
+						rt = ncoord(u)**2 + ncoord(p)**2
+						coords(1) = -ncoord(u) + X(j)
+						coords(2) = -ncoord(p) + Y(j)
+						
+
+					end if
+				end do
+            end do
+            
+          
+            
+			l = sqrt(rt)
+			if(l-2*r<0.0) then
+		
+		
+				rt = 1.0/sqrt((X(j) - coords(1))**2+(Y(j) - coords(2))**2)
+      
+				fm(1) = (-X(j) +coords(1))*rt
+				fm(2) = (-Y(j) +coords(2))*rt
+				rt = Vx(j)*fm(1)+Vy(j)*fm(2)
+				if(rt>0.0) then
+					Vx(j) = Vx(j)-2.0*rt*fm(1)
+					Vy(j) = Vy(j)-2.0*rt*fm(2)
+				else if(abs(rt)<0.01) then
+					Vx(j) = Vx(j)-fm(1)*0.01
+					Vy(j) = Vy(j)-fm(2)*0.01
+				end if
+			else
+				rt  =4*e*abs(-12.0*sigma**12/l**13 + 6.0*sigma**6/l**7)/sqrt((X(j) - coords(1))**2+(Y(j) - coords(2))**2)
+				fm(1) = (X(j) - coords(1))*rt
+				fm(2) = (Y(j) - coords(2))*rt
+				F(1) = F(1)+fm(1)
+				F(2) = F(2)+fm(2)
+            end if
+		
+            
+            
+             if (i==1) then 
+                 epot0=epot0+2*e*(sigma**12/l**12 -sigma**6/l**6)                   !epot 
+                  epoln0=epon0
+           end if
+      epot=epot+2*e*(sigma**12/l**12 -sigma**6/l**6)
+       
+                              epoln=epot
+
+            
+			
+
+		end do
+
+		
+		
+		axp(j) = ax(j)
+		ayp(j) = ay(j)
+		ax(j) = F(1)/m
+		ay(j) = F(2)/m
+		Vx(j) = Vx(j)+0.5*(ax(j))*dt
+		Vy(j) = Vy(j)+0.5*(ay(j))*dt
+        
+        
+        
+           if (i==1) then 
+                 
+                 ekin0=ekin0+m* (Vx(j)**2+Vy(j)**2)/2
+        epoln0=epoln0+ekin0
+           end if
+      
+        ekin=ekin+m* (Vx(j)**2+Vy(j)**2)/2
+             epoln=epoln+ekin
+           
+           
+        end do
+        
+       
+        
+        
+
+ do j = 1,N
+		X(j) = X(j)+Vx(j)*dt+0.5*ax(j)*dt**2
+		Y(j) = Y(j)+Vy(j)*dt+0.5*ay(j)*dt**2
+        	
+            
+        
+        
+		if(X(j)-r<-0.0) then
+			do while(X(j)-r<0.0)
+				X(j) = X(j)+lx
+			end do
+		end if
+		if(X(j)+r-lx>0.0) then
+			do while(X(j)+r-lx>0.0)
+				X(j) = X(j)-lx
+			end do
+		end if
+
+		if(Y(j)-r<-0.0) then
+			do while(Y(j)-r<-0.0)
+				Y(j) = Y(j)+lx
+			end do
+		end if
+		if(Y(j)-lx+r>0.0) then
+			do while(Y(j)+r-lx>0.0)
+				Y(j) = Y(j)-lx
+			end do
+		end if
+		
+		
+		
+			Vx(j) = Vx(j)+0.5*(ax(j))*dt
+			Vy(j) = Vy(j)+0.5*(ay(j))*dt
+	 
+     
+            
+            
+	
+    
+    end do
+    
+    
+       if ((((abs(epoln-epoln0)/epoln0).le.5.0)).and.(i==200)) then
+    
+        
+        write(*,*) "done"
+      
+       end if
+       if ((((abs(epoln-epoln0)/epoln0).gt.5.0)).and.(i==200)) then
+       write(*,*) "nope"
+       exit
+       end if
+   ires2=setcolor(3)
+   ires2=setpixel_w(dble(time/10+lx),dble(epot/10000000*lx))
+    ires2=setcolor(5)
+   ires2=setpixel_w(dble(time/10+lx),dble(ekin/10000000*lx))
+    ires2=setcolor(7)
+   ires2=setpixel_w(dble(time/10+lx),dble(epoln/10000000*lx))
+            
+
+
+do h=1,N
+        if (((X(h)-r).ge.(lx/2.0)).and.((X(h)+r).le.lx)) then
+            left=left+1
+			
+			
+	
+        end if
+    end do
+       
+
+
+
+    ires2=setcolor(5)
+    
+     do kol=1,N
+                    ires2=ellipse_w($gfillinterior, dble(X(kol)-r),dble(Y(kol)-r),dble(X(kol)+r),dble(Y(kol)+r))
+                    
+     end do
+     
+     ires2=setcolor(colorfon)
+     call sleepqq(2)
+    
+     do kol=1,N
+                    ires2=ellipse_w($gfillinterior, dble(X(kol)-r),dble(Y(kol)-r),dble(X(kol)+r),dble(Y(kol)+r))
+                    
+     end do
+           ires2=setcolor(4)
+                     	 call moveto_w(dble(0),dble(0),wxy)
+                           ires2 = lineto_w(dble(lx),dble(0))
+    
+         call moveto_w(dble(0),dble(0),wxy)
+                           ires2 = lineto_w(dble(0),dble(lx)) 
+                	 call moveto_w(dble(lx),dble(lx),wxy)
+                           ires2 = lineto_w(dble(lx),dble(0))
+    
+         call moveto_w(dble(lx),dble(lx),wxy)
+                           ires2 = lineto_w(dble(0),dble(lx)) 
+						     call moveto_w(dble(lx/2),dble(0),wxy)
+                           ires2 = lineto_w(dble(lx/2),dble(lx)) 
+
+
+	
+			 left=0
+
+    end do
+    
+									 ires2=setcolor(5)
+    
+					 do kol=1,N
+                    ires2=ellipse_w($gfillinterior, dble(X(kol)-r),dble(Y(kol)-r),dble(X(kol)+r),dble(Y(kol)+r))
+                    
+					 end do
+        
+        
+					   read(*,*) 
+			
+
+						ires2=setcolor(0)
+			 
+					do kol=1,N
+                    ires2=ellipse_w($gfillinterior, dble(X(kol)-r),dble(Y(kol)-r),dble(X(kol)+r),dble(Y(kol)+r))
+                    
+					 end do
+
+
+
+
+    
+    flag=int(time/dt)
+   write(*,*)   flag
+        
+        
+ 
+        
+        
+        
+        
+        
+        
+        
+        
+     !obratno   
+        
+        
+         
+        
+        
+        
+        
+        
+        
+        
+    end
